@@ -22,10 +22,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -43,17 +41,20 @@ import java.util.List;
 public class TransServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String path = this.getServletContext().getRealPath("upload");
+        String fileName = null;
         // 1.上传
         try {
             // 创建文件项工厂
             DiskFileItemFactory factory = new DiskFileItemFactory();
             // 创建文件上传核心组件
             ServletFileUpload servletFileUpload = new ServletFileUpload(factory);
+            // 解决中文乱码问题
+            servletFileUpload.setHeaderEncoding("UTF-8");
             // 解析Multipart
             List<FileItem> items = servletFileUpload.parseRequest(request);
             // 解析items
             for (FileItem item: items){
-                String fileName = item.getName();
+                fileName = item.getName().split("\\.")[0];
                 // 输入流
                 InputStream inputStream = item.getInputStream();
                 // 2.转存zip
@@ -208,10 +209,27 @@ public class TransServlet extends HttpServlet {
                 }
             }
             // 导出到Excel
-            FileOutputStream output=new FileOutputStream("d:\\workbook.xls");
+            FileOutputStream output = new FileOutputStream(path + "\\" + fileName  + ".xls");
             workbook.write(output);
             // 关闭流
             output.close();
+            // 下载
+            String downName = fileName + "测试用例.xls";
+            //设置响应头，控制浏览器下载该文件
+            response.setHeader("content-disposition", "attachment;filename=" + new String(downName.getBytes("UTF-8"),"ISO8859-1"));
+            //读取要下载的文件，保存到文件输入流
+            FileInputStream fileInputStream = new FileInputStream(path + "\\" + fileName + ".xls");
+            //创建输出流
+            OutputStream outputStream = response.getOutputStream();
+            // 创建缓冲区
+            byte buffer[] = new byte[1024];
+            int len = 0;
+            while((len = fileInputStream.read(buffer))>0){
+                outputStream.write(buffer, 0, len);
+            }
+            // 关闭流
+            fileInputStream.close();
+            outputStream.close();
         } catch (FileUploadException e) {
             e.printStackTrace();
         } catch (DocumentException e) {
