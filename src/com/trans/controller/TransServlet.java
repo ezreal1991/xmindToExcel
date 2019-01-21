@@ -149,11 +149,18 @@ public class TransServlet extends HttpServlet {
             HSSFCellStyle style = workbook.createCellStyle();
             // 背景色
             style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            style.setFillForegroundColor(IndexedColors.PALE_BLUE.index);
+            style.setFillForegroundColor(IndexedColors.LIME.getIndex());
             // 水平居中
             style.setAlignment(HorizontalAlignment.CENTER);
             // 垂直居中
             style.setVerticalAlignment(VerticalAlignment.CENTER);
+            // 设置自动换行;
+            style.setWrapText(true);
+
+            // 字体
+            HSSFFont fontStyle = workbook.createFont();
+            fontStyle.setFontName("微软雅黑");
+            style.setFont(fontStyle);
 
             sheet.setColumnWidth(0, 20 * 256);
             sheet.setColumnWidth(1, 20 * 256);
@@ -172,6 +179,14 @@ public class TransServlet extends HttpServlet {
             cell6.setCellStyle(style);
             cell7.setCellStyle(style);
             cell8.setCellStyle(style);
+
+            HSSFCellStyle styleContent = workbook.createCellStyle();
+            // 垂直居中
+            styleContent.setVerticalAlignment(VerticalAlignment.CENTER);
+            // 设置自动换行;
+            styleContent.setWrapText(true);
+            // 设置字体
+            styleContent.setFont(fontStyle);
             int rowNum = 1;
             // 写入Excel
             for (List<TreeElement> list:strList
@@ -187,6 +202,7 @@ public class TransServlet extends HttpServlet {
                     if( (!"确认点".equals(treeValue)) && (cellNum <= 4)){
                         HSSFCell cell = row1.createCell(cellNum);
                         cell.setCellValue(cellValue.getContent());
+                        cell.setCellStyle(styleContent);
                         cellNum ++;
                     }else if("确认点".equals(treeValue)){
                         cellNum = 4;
@@ -194,16 +210,19 @@ public class TransServlet extends HttpServlet {
                         // 最后一列  结果列
                         HSSFCell cell = row1.createCell(6);
                         cell.setCellValue(cellValue.getContent());
+                        cell.setCellStyle(styleContent);
                     }else{
                         HSSFCell cell = row1.getCell(5);
                         if (cell == null){
                             // cell为空的情况
                             cell = row1.createCell(5);
                             cell.setCellValue(cellValue.getContent());
+                            cell.setCellStyle(styleContent);
                         }else {
                             // cell不为空的情况
-                            String temp = cell.getStringCellValue() + "\r\n" + cellValue.getContent();
+                            String temp = cell.getStringCellValue() + " \n" + cellValue.getContent();
                             cell.setCellValue(temp);
+                            cell.setCellStyle(styleContent);
                         }
                     }
                 }
