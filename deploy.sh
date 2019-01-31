@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash -ilex
 BUILD_ID=DONTKILLME
 . /etc/profile
 export PROJ_PATH=`pwd`
